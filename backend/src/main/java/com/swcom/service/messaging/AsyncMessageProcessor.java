@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class AsyncMessageProcessor {
 
     private final AsyncMessageTaskRepository taskRepository;

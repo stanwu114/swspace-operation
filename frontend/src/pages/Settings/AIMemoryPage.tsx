@@ -52,6 +52,7 @@ const AIMemoryPage: React.FC = () => {
 
   useEffect(() => {
     handleLoadMemories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteMemory = async (id: string) => {

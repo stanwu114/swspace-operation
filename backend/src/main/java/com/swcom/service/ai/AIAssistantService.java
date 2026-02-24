@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class AIAssistantService {
 
     private final AIConfig aiConfig;
@@ -78,8 +79,7 @@ public class AIAssistantService {
     }
 
     public AIConversationDTO getConversation(UUID id) {
-        AIConversation conversation = conversationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+        AIConversation conversation = conversationRepository.findById(id).orElseThrow(() -> new RuntimeException("Conversation not found"));
         return toConversationDTO(conversation);
     }
 
@@ -95,8 +95,7 @@ public class AIAssistantService {
         // Get or create conversation
         AIConversation conversation;
         if (request.getConversationId() != null) {
-            conversation = conversationRepository.findById(request.getConversationId())
-                    .orElseThrow(() -> new RuntimeException("Conversation not found"));
+            conversation = conversationRepository.findById(request.getConversationId()).orElseThrow(() -> new RuntimeException("Conversation not found"));
         } else {
             conversation = createConversation(request.getModuleName(), request.getContextId());
         }
@@ -263,7 +262,7 @@ public class AIAssistantService {
                         .content(msg.getContent())
                         .messageTime(LocalDateTime.now())
                         .build();
-                messageRepository.save(aiMessage);
+        messageRepository.save(aiMessage);
             }
 
             // Update conversation title if empty
@@ -280,8 +279,8 @@ public class AIAssistantService {
             }
         }
 
-        conversationRepository.save(conversation);
-        return toConversationDTO(conversation);
+        AIConversation savedConversation = conversationRepository.save(conversation);
+        return toConversationDTO(savedConversation);
     }
 
     // ========== Conversation Delete ==========

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import java.util.Optional;
 
 @Configuration
+@SuppressWarnings("null")
 public class AIConfig {
 
     @Value("${spring.ai.openai.api-key:}")
@@ -33,6 +34,7 @@ public class AIConfig {
     }
 
     @Bean
+    @SuppressWarnings("deprecation")
     public OpenAiChatModel openAiChatModel() {
         OpenAiApi openAiApi = new OpenAiApi(defaultBaseUrl, defaultApiKey);
         OpenAiChatOptions options = OpenAiChatOptions.builder()
@@ -45,6 +47,7 @@ public class AIConfig {
     /**
      * Create a custom ChatClient for a specific AI employee configuration
      */
+    @SuppressWarnings("deprecation")
     public ChatClient createCustomChatClient(String apiUrl, String apiKey, String modelName, Double temperature) {
         // Normalize API URL: remove trailing /v1 if present (OpenAiApi adds it automatically)
         String normalizedUrl = apiUrl;

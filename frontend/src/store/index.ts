@@ -5,6 +5,7 @@ import contractReducer from './slices/contractSlice';
 import aiAssistantReducer from './slices/aiAssistantSlice';
 import expenseReducer from './slices/expenseSlice';
 import leadReducer from './slices/leadSlice';
+import aiTaskReducer from './slices/aiTaskSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     aiAssistant: aiAssistantReducer,
     expense: expenseReducer,
     lead: leadReducer,
+    aiTask: aiTaskReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

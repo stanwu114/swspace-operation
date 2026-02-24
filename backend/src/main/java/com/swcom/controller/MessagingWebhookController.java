@@ -1,7 +1,5 @@
 package com.swcom.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swcom.config.MessagingProperties;
 import com.swcom.dto.messaging.IncomingMessage;
 import com.swcom.service.messaging.MessageRoutingService;
 import com.swcom.service.messaging.TelegramAdapter;
@@ -24,19 +22,13 @@ public class MessagingWebhookController {
     private final MessageRoutingService routingService;
     private final Optional<TelegramAdapter> telegramAdapter;
     private final Optional<WeChatAdapter> weChatAdapter;
-    private final MessagingProperties messagingProperties;
-    private final ObjectMapper objectMapper;
 
     public MessagingWebhookController(MessageRoutingService routingService,
                                        Optional<TelegramAdapter> telegramAdapter,
-                                       Optional<WeChatAdapter> weChatAdapter,
-                                       MessagingProperties messagingProperties,
-                                       ObjectMapper objectMapper) {
+                                       Optional<WeChatAdapter> weChatAdapter) {
         this.routingService = routingService;
         this.telegramAdapter = telegramAdapter;
         this.weChatAdapter = weChatAdapter;
-        this.messagingProperties = messagingProperties;
-        this.objectMapper = objectMapper;
     }
 
     /**

@@ -477,3 +477,64 @@ export interface LeadSearchParams {
   customerName?: string;
   tag?: string;
 }
+
+// AI Task types
+export type TaskType = 'INTELLIGENCE' | 'DOCUMENT' | 'DATA_ANALYSIS' | 'REPORT' | 'OTHER';
+export type TaskStatus = 'ACTIVE' | 'PAUSED' | 'DISABLED';
+export type ExecutionMode = 'SCHEDULED' | 'PERIODIC' | 'CUSTOM';
+export type ExecutionStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+export interface ScheduleConfig {
+  cronExpression?: string;
+  intervalMinutes?: number;
+  scheduledTime?: string;
+}
+
+export interface AITask {
+  id: string;
+  taskName: string;
+  taskType: TaskType;
+  description: string | null;
+  executionMode: ExecutionMode;
+  scheduleConfig: ScheduleConfig;
+  positionId: string | null;
+  positionName?: string;
+  employeeId: string | null;
+  employeeName?: string;
+  projectId: string | null;
+  projectName?: string;
+  status: TaskStatus;
+  apiEndpoint: string | null;
+  promptTemplate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AITaskForm {
+  taskName: string;
+  taskType: TaskType;
+  description?: string;
+  executionMode: ExecutionMode;
+  scheduleConfig: ScheduleConfig;
+  positionId?: string;
+  employeeId?: string;
+  projectId?: string;
+  status?: TaskStatus;
+  apiEndpoint?: string;
+  promptTemplate?: string;
+}
+
+export interface AITaskExecution {
+  id: string;
+  taskId: string;
+  executorId: string | null;
+  executorName?: string;
+  startTime: string;
+  endTime: string | null;
+  status: ExecutionStatus;
+  inputData: Record<string, unknown> | null;
+  outputData: Record<string, unknown> | null;
+  errorMessage: string | null;
+  tokensUsed: number | null;
+  createdAt: string;
+}

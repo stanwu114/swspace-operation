@@ -7,7 +7,6 @@ import com.swcom.repository.AIConversationRepository;
 import com.swcom.repository.AIMemoryRepository;
 import io.agentscope.core.memory.reme.ReMeClient;
 import io.agentscope.core.memory.reme.ReMeAddRequest;
-import io.agentscope.core.memory.reme.ReMeAddResponse;
 import io.agentscope.core.memory.reme.ReMeMessage;
 import io.agentscope.core.memory.reme.ReMeSearchRequest;
 import io.agentscope.core.memory.reme.ReMeSearchResponse;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class ReMeMemoryService {
 
     private final AIMemoryRepository memoryRepository;

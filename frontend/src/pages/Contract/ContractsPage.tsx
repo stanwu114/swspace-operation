@@ -124,6 +124,7 @@ const ContractsPage: React.FC = () => {
 
   useEffect(() => {
     handleFilter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType, filterStatus]);
 
   const handleAdd = () => {

@@ -20,4 +20,7 @@ public interface LeadTrackingLogRepository extends JpaRepository<LeadTrackingLog
     Optional<LeadTrackingLog> findByIdWithCreator(@Param("id") UUID id);
 
     long countByLeadId(UUID leadId);
+
+    @Query("SELECT l.lead.id, COUNT(l.id) FROM LeadTrackingLog l WHERE l.lead.id IN :leadIds GROUP BY l.lead.id")
+    List<Object[]> countByLeadIds(@Param("leadIds") List<UUID> leadIds);
 }

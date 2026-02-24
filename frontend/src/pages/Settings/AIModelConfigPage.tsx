@@ -118,6 +118,7 @@ const AIModelConfigPage: React.FC = () => {
     
     // 没有保存的模型列表时使用默认选项
     setModelOptions(defaultModelOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelForm]);
 
   // 从API拉取模型列表
@@ -242,7 +243,7 @@ const AIModelConfigPage: React.FC = () => {
         const errorData = await response.text();
         message.error(`连接测试失败: ${errorData.substring(0, 100)}`);
       }
-    } catch (error) {
+    } catch {
       setTestResult('error');
       message.error('连接测试失败，请检查网络和配置');
     } finally {

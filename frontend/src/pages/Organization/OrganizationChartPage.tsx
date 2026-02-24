@@ -80,31 +80,34 @@ const OrganizationChartPage: React.FC = () => {
 
   // 转换数据为 ECharts 格式
   const transformToEChartsData = useCallback((node: ChartNode): Record<string, unknown> => {
-    return {
-      name: node.name,
-      value: node.type,
-      itemStyle: {
-        color: getNodeColor(node.type),
-        borderColor: getNodeColor(node.type),
-      },
-      label: {
-        formatter: `{name|${node.name}}\n{type|${getNodeLabel(node.type)}}`,
-        rich: {
-          name: {
-            fontSize: 12,
-            fontWeight: 'bold',
-            color: '#333',
-          },
-          type: {
-            fontSize: 10,
-            color: '#999',
+    const transformNode = (n: ChartNode): Record<string, unknown> => {
+      return {
+        name: n.name,
+        value: n.type,
+        itemStyle: {
+          color: getNodeColor(n.type),
+          borderColor: getNodeColor(n.type),
+        },
+        label: {
+          formatter: `{name|${n.name}}\n{type|${getNodeLabel(n.type)}}`,
+          rich: {
+            name: {
+              fontSize: 12,
+              fontWeight: 'bold',
+              color: '#333',
+            },
+            type: {
+              fontSize: 10,
+              color: '#999',
+            },
           },
         },
-      },
-      // 保留原始数据用于点击事件
-      data: node,
-      children: node.children?.map(transformToEChartsData),
+        // 保留原始数据用于点击事件
+        data: n,
+        children: n.children?.map(transformNode),
+      };
     };
+    return transformNode(node);
   }, []);
 
   // 初始化图表

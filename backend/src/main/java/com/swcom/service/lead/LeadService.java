@@ -12,15 +12,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class LeadService {
 
     private final LeadRepository leadRepository;
@@ -30,9 +28,8 @@ public class LeadService {
     // ==================== Lead CRUD ====================
 
     public List<LeadDTO> getAll() {
-        return leadRepository.findAllWithOwner().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        List<Lead> leads = leadRepository.findAllWithOwner();
+        return toDTOList(leads);
     }
 
     public List<LeadDTO> search(LeadStatus status, UUID ownerId, String customerName, String tag) {
@@ -41,15 +38,14 @@ public class LeadService {
         }
 
         Specification<Lead> spec = buildSpecification(status, ownerId, customerName, tag);
-        return leadRepository.findAll(spec).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+        List<Lead> leads = leadRepository.findAll(spec);
+        return toDTOList(leads);
     }
 
     public LeadDTO getById(UUID id) {
         Lead lead = leadRepository.findByIdWithOwner(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lead not found with id: " + id));
-        return toDTO(lead);
+        return toDTO(lead, logRepository.countByLeadId(lead.getId()));
     }
 
     @Transactional
@@ -73,8 +69,8 @@ public class LeadService {
         }
 
         Lead saved = leadRepository.save(lead);
-        log.info("Created lead: {} ({})", saved.getLeadName(), saved.getId());
-        return toDTO(saved);
+        log.debug("Created lead: {} ({})", saved.getLeadName(), saved.getId());
+        return toDTO(saved, 0);
     }
 
     @Transactional
@@ -104,19 +100,19 @@ public class LeadService {
         }
 
         Lead saved = leadRepository.save(lead);
-        log.info("Updated lead: {} ({})", saved.getLeadName(), saved.getId());
-        return toDTO(saved);
+        log.debug("Updated lead: {} ({})", saved.getLeadName(), saved.getId());
+        return toDTO(saved, logRepository.countByLeadId(saved.getId()));
     }
 
     @Transactional
     public LeadDTO updateStatus(UUID id, LeadStatus status) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lead not found with id: " + id));
-        
+
         lead.setStatus(status);
         Lead saved = leadRepository.save(lead);
-        log.info("Updated lead status: {} -> {}", saved.getLeadName(), status);
-        return toDTO(saved);
+        log.debug("Updated lead status: {} -> {}", saved.getLeadName(), status);
+        return toDTO(saved, logRepository.countByLeadId(saved.getId()));
     }
 
     @Transactional
@@ -124,15 +120,13 @@ public class LeadService {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lead not found with id: " + id));
         leadRepository.delete(lead);
-        log.info("Deleted lead: {} ({})", lead.getLeadName(), id);
+        log.debug("Deleted lead: {} ({})", lead.getLeadName(), id);
     }
 
     // ==================== Lead Tracking Log CRUD ====================
 
     public List<LeadTrackingLogDTO> getLogs(UUID leadId) {
-        if (!leadRepository.existsById(leadId)) {
-            throw new EntityNotFoundException("Lead not found with id: " + leadId);
-        }
+        validateLeadExists(leadId);
         return logRepository.findByLeadIdWithCreator(leadId).stream()
                 .map(this::toLogDTO)
                 .collect(Collectors.toList());
@@ -151,15 +145,13 @@ public class LeadService {
                 .build();
 
         LeadTrackingLog saved = logRepository.save(trackingLog);
-        log.info("Created tracking log for lead: {} ({})", lead.getLeadName(), saved.getId());
+        log.debug("Created tracking log for lead: {} ({})", lead.getLeadName(), saved.getId());
         return toLogDTO(saved);
     }
 
     @Transactional
     public LeadTrackingLogDTO updateLog(UUID leadId, UUID logId, LeadTrackingLogForm form) {
-        if (!leadRepository.existsById(leadId)) {
-            throw new EntityNotFoundException("Lead not found with id: " + leadId);
-        }
+        validateLeadExists(leadId);
 
         LeadTrackingLog trackingLog = logRepository.findById(logId)
                 .orElseThrow(() -> new EntityNotFoundException("Tracking log not found with id: " + logId));
@@ -173,15 +165,13 @@ public class LeadService {
         trackingLog.setLogContent(form.getLogContent());
 
         LeadTrackingLog saved = logRepository.save(trackingLog);
-        log.info("Updated tracking log: {}", saved.getId());
+        log.debug("Updated tracking log: {}", saved.getId());
         return toLogDTO(saved);
     }
 
     @Transactional
     public void deleteLog(UUID leadId, UUID logId) {
-        if (!leadRepository.existsById(leadId)) {
-            throw new EntityNotFoundException("Lead not found with id: " + leadId);
-        }
+        validateLeadExists(leadId);
 
         LeadTrackingLog trackingLog = logRepository.findById(logId)
                 .orElseThrow(() -> new EntityNotFoundException("Tracking log not found with id: " + logId));
@@ -191,7 +181,7 @@ public class LeadService {
         }
 
         logRepository.delete(trackingLog);
-        log.info("Deleted tracking log: {}", logId);
+        log.debug("Deleted tracking log: {}", logId);
     }
 
     // ==================== Helper Methods ====================
@@ -206,6 +196,12 @@ public class LeadService {
                 .collect(Collectors.toList());
     }
 
+    private void validateLeadExists(UUID leadId) {
+        if (!leadRepository.existsById(leadId)) {
+            throw new EntityNotFoundException("Lead not found with id: " + leadId);
+        }
+    }
+
     private Specification<Lead> buildSpecification(LeadStatus status, UUID ownerId, String customerName, String tag) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -217,11 +213,18 @@ public class LeadService {
                 predicates.add(cb.equal(root.get("owner").get("id"), ownerId));
             }
             if (customerName != null && !customerName.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("customerName")), 
+                predicates.add(cb.like(cb.lower(root.get("customerName")),
                         "%" + customerName.toLowerCase() + "%"));
             }
             if (tag != null && !tag.isBlank()) {
-                predicates.add(cb.like(root.get("tags"), "%" + tag + "%"));
+                String exactTag = tag.trim();
+                Predicate tagPredicate = cb.or(
+                        cb.equal(root.get("tags"), exactTag),
+                        cb.like(root.get("tags"), exactTag + ",%"),
+                        cb.like(root.get("tags"), "%," + exactTag + ",%"),
+                        cb.like(root.get("tags"), "%," + exactTag)
+                );
+                predicates.add(tagPredicate);
             }
 
             query.orderBy(cb.desc(root.get("createdAt")));
@@ -246,9 +249,26 @@ public class LeadService {
                 .collect(Collectors.toList());
     }
 
-    private LeadDTO toDTO(Lead lead) {
-        long logCount = logRepository.countByLeadId(lead.getId());
+    /**
+     * Batch convert leads to DTOs, fetching logCounts in a single query.
+     */
+    private List<LeadDTO> toDTOList(List<Lead> leads) {
+        if (leads.isEmpty()) {
+            return new ArrayList<>();
+        }
 
+        List<UUID> leadIds = leads.stream().map(Lead::getId).collect(Collectors.toList());
+        Map<UUID, Long> logCountMap = new HashMap<>();
+        for (Object[] row : logRepository.countByLeadIds(leadIds)) {
+            logCountMap.put((UUID) row[0], (Long) row[1]);
+        }
+
+        return leads.stream()
+                .map(lead -> toDTO(lead, logCountMap.getOrDefault(lead.getId(), 0L)))
+                .collect(Collectors.toList());
+    }
+
+    private LeadDTO toDTO(Lead lead, long logCount) {
         return LeadDTO.builder()
                 .id(lead.getId())
                 .leadName(lead.getLeadName())

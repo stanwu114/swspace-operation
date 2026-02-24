@@ -75,6 +75,7 @@ const LeadsPage: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
 
+  // Load existing tags function
   const loadExistingTags = async () => {
     try {
       const data = await leadApi.getAllTags();
@@ -86,6 +87,7 @@ const LeadsPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchLeads());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExistingTags();
   }, [dispatch]);
 
@@ -137,8 +139,9 @@ const LeadsPage: React.FC = () => {
       leadForm.resetFields();
       setTags([]);
       loadExistingTags();
-    } catch (error) {
-      message.error('操作失败');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      message.error(err.message || '操作失败');
     }
   };
 
@@ -146,8 +149,9 @@ const LeadsPage: React.FC = () => {
     try {
       await dispatch(deleteLead(id)).unwrap();
       message.success('线索删除成功');
-    } catch {
-      message.error('删除失败');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      message.error(err.message || '删除失败');
     }
   };
 
@@ -155,8 +159,9 @@ const LeadsPage: React.FC = () => {
     try {
       await dispatch(updateLeadStatus({ id, status })).unwrap();
       message.success('状态更新成功');
-    } catch {
-      message.error('状态更新失败');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      message.error(err.message || '状态更新失败');
     }
   };
 
@@ -206,8 +211,9 @@ const LeadsPage: React.FC = () => {
       }
       setLogModalOpen(false);
       logForm.resetFields();
-    } catch {
-      message.error('操作失败');
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      message.error(err.message || '操作失败');
     }
   };
 
@@ -216,19 +222,9 @@ const LeadsPage: React.FC = () => {
     try {
       await dispatch(deleteLeadLog({ leadId: selectedLead.id, logId })).unwrap();
       message.success('日志删除成功');
-    } catch {
-      message.error('删除失败');
-    }
-  };
-
-  // 标签相关处理
-  const handleTagClose = (removedTag: string) => {
-    setTags(tags.filter(tag => tag !== removedTag));
-  };
-
-  const handleTagSelect = (value: string) => {
-    if (!tags.includes(value)) {
-      setTags([...tags, value]);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      message.error(err.message || '删除失败');
     }
   };
 
@@ -373,30 +369,14 @@ const LeadsPage: React.FC = () => {
             <Input placeholder="请输入客户名称" />
           </Form.Item>
           <Form.Item label="标签">
-            <div>
-              <Space wrap style={{ marginBottom: tags.length > 0 ? 8 : 0 }}>
-                {tags.map((tag, index) => (
-                  <Tag
-                    key={tag}
-                    closable
-                    color={tagColors[index % tagColors.length]}
-                    onClose={() => handleTagClose(tag)}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </Space>
-              <Select
-                mode="tags"
-                placeholder="选择已有标签或输入新标签"
-                value={[]}
-                onSelect={handleTagSelect}
-                style={{ width: '100%' }}
-                options={existingTags
-                  .filter((t) => !tags.includes(t))
-                  .map((t) => ({ value: t, label: t }))}
-              />
-            </div>
+            <Select
+              mode="tags"
+              placeholder="选择已有标签或输入新标签"
+              value={tags}
+              onChange={(values: string[]) => setTags(values)}
+              style={{ width: '100%' }}
+              options={existingTags.map((t) => ({ value: t, label: t }))}
+            />
           </Form.Item>
           <Form.Item name="description" label="描述">
             <TextArea rows={3} placeholder="请输入线索描述" />

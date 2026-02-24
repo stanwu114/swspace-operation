@@ -135,6 +135,7 @@ const ProjectsPage: React.FC = () => {
 
   useEffect(() => {
     handleFilter();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterCategory, filterStatus]);
 
   const handleAdd = () => {
@@ -163,7 +164,7 @@ const ProjectsPage: React.FC = () => {
     try {
       await dispatch(deleteProject(id)).unwrap();
       message.success('项目删除成功');
-    } catch (error) {
+    } catch {
       message.error('删除项目失败');
     }
   };
@@ -203,7 +204,7 @@ const ProjectsPage: React.FC = () => {
 
       setModalOpen(false);
       handleFilter();
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };
@@ -213,7 +214,7 @@ const ProjectsPage: React.FC = () => {
     try {
       await dispatch(uploadProjectDocument({ projectId: selectedProject.id, file })).unwrap();
       message.success('文档上传成功');
-    } catch (error) {
+    } catch {
       message.error('文档上传失败');
     }
   };
@@ -223,7 +224,7 @@ const ProjectsPage: React.FC = () => {
     try {
       await dispatch(deleteProjectDocument({ projectId: selectedProject.id, documentId })).unwrap();
       message.success('文档删除成功');
-    } catch (error) {
+    } catch {
       message.error('删除文档失败');
     }
   };
@@ -245,7 +246,7 @@ const ProjectsPage: React.FC = () => {
       setCostModalOpen(false);
       costForm.resetFields();
       await dispatch(fetchProjectCosts(selectedProject.id));
-    } catch (error) {
+    } catch {
       message.error('添加成本失败');
     }
   };

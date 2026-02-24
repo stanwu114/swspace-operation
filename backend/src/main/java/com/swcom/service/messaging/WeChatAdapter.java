@@ -17,6 +17,7 @@ import java.util.Map;
 @Component
 @ConditionalOnProperty(name = "messaging.wechat.enabled", havingValue = "true")
 @Slf4j
+@SuppressWarnings({"null", "unchecked"})
 public class WeChatAdapter implements MessagePlatformAdapter {
 
     private final MessagingProperties.WeChatConfig wechatConfig;
@@ -48,9 +49,11 @@ public class WeChatAdapter implements MessagePlatformAdapter {
                     "text", Map.of("content", text)
             );
 
+            Map<String, Object> requestBody = body;
+
             webClient.post()
                     .uri("/cgi-bin/message/custom/send?access_token=" + token)
-                    .bodyValue(body)
+                    .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
                     .doOnError(e -> log.error("发送微信消息失败: openId={}", openId, e))
@@ -61,7 +64,6 @@ public class WeChatAdapter implements MessagePlatformAdapter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public IncomingMessage parseIncomingMessage(Object rawPayload) {
         try {
             String xml = (String) rawPayload;

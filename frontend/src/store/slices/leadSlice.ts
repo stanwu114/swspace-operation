@@ -31,11 +31,6 @@ export const fetchLeads = createAsyncThunk(
   async (params?: LeadSearchParams) => await leadApi.getList(params)
 );
 
-export const fetchLeadById = createAsyncThunk(
-  'lead/fetchLeadById',
-  async (id: string) => await leadApi.getById(id)
-);
-
 export const createLead = createAsyncThunk(
   'lead/createLead',
   async (data: LeadForm) => await leadApi.create(data)
@@ -93,9 +88,6 @@ const leadSlice = createSlice({
     setSelectedLead: (state, action: PayloadAction<Lead | null>) => {
       state.selectedLead = action.payload;
     },
-    clearLeadError: (state) => {
-      state.error = null;
-    },
     clearLogs: (state) => {
       state.logs = [];
     },
@@ -114,10 +106,6 @@ const leadSlice = createSlice({
       .addCase(fetchLeads.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || '获取线索列表失败';
-      })
-      // Fetch lead by id
-      .addCase(fetchLeadById.fulfilled, (state, action) => {
-        state.selectedLead = action.payload;
       })
       // Create lead
       .addCase(createLead.fulfilled, (state, action) => {
@@ -172,5 +160,5 @@ const leadSlice = createSlice({
   },
 });
 
-export const { setSelectedLead, clearLeadError, clearLogs } = leadSlice.actions;
+export const { setSelectedLead, clearLogs } = leadSlice.actions;
 export default leadSlice.reducer;

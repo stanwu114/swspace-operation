@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class UserBindingService {
 
     private final ExternalUserBindingRepository bindingRepository;

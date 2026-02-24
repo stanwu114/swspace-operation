@@ -28,6 +28,7 @@ import java.util.UUID;
 @Component
 @ConditionalOnProperty(name = "messaging.telegram.enabled", havingValue = "true")
 @Slf4j
+@SuppressWarnings("null")
 public class TelegramAdapter implements MessagePlatformAdapter {
 
     private final MessagingProperties.TelegramConfig telegramConfig;
@@ -131,7 +132,7 @@ public class TelegramAdapter implements MessagePlatformAdapter {
         }
         try {
             // 先尝试 Markdown 格式发送
-            String response = webClient.post()
+            webClient.post()
                     .uri("/sendMessage")
                     .bodyValue(Map.of(
                             "chat_id", chatId,
@@ -146,7 +147,7 @@ public class TelegramAdapter implements MessagePlatformAdapter {
             // Markdown 解析失败时降级为纯文本重发
             log.warn("Telegram Markdown 发送失败，降级为纯文本: chatId={}, error={}", chatId, e.getMessage());
             try {
-                String response = webClient.post()
+                webClient.post()
                         .uri("/sendMessage")
                         .bodyValue(Map.of(
                                 "chat_id", chatId,
@@ -184,7 +185,6 @@ public class TelegramAdapter implements MessagePlatformAdapter {
 
             JsonNode from = message.path("from");
             String chatId = String.valueOf(message.path("chat").path("id").asLong());
-            String userId = String.valueOf(from.path("id").asLong());
             String username = from.has("username") ? from.path("username").asText() : from.path("first_name").asText();
             
             // 检测消息类型并提取相关信息

@@ -56,7 +56,7 @@ public class LeadController {
         return ResponseEntity.ok(ApiResponse.success(lead));
     }
 
-    @PatchMapping("/{id}/status")
+    @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<LeadDTO>> updateLeadStatus(
             @PathVariable UUID id, @RequestBody StatusRequest request) {
         LeadDTO lead = leadService.updateStatus(id, request.getStatus());

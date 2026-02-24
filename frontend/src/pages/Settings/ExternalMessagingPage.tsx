@@ -96,6 +96,7 @@ const ExternalMessagingPage: React.FC = () => {
     loadPlatforms();
     loadBindings();
     loadEmployees();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadPlatforms = async () => {

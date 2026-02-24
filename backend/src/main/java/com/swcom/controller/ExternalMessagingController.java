@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/external-messaging")
 @Slf4j
 @ConditionalOnProperty(name = "messaging.enabled", havingValue = "true", matchIfMissing = true)
+@SuppressWarnings("null")
 public class ExternalMessagingController {
 
     private final MessagingPlatformConfigRepository platformConfigRepository;
@@ -77,8 +78,7 @@ public class ExternalMessagingController {
     public ResponseEntity<ApiResponse<PlatformConfigDTO>> savePlatform(@RequestBody PlatformConfigDTO dto) {
         MessagingPlatformConfig config;
         if (dto.getId() != null) {
-            config = platformConfigRepository.findById(dto.getId())
-                    .orElseThrow(() -> new RuntimeException("平台配置不存在"));
+            config = platformConfigRepository.findById(dto.getId()).orElseThrow(() -> new RuntimeException("平台配置不存在"));
         } else {
             config = new MessagingPlatformConfig();
         }
@@ -93,8 +93,7 @@ public class ExternalMessagingController {
 
     @PutMapping("/platforms/{id}/toggle")
     public ResponseEntity<ApiResponse<PlatformConfigDTO>> togglePlatform(@PathVariable UUID id) {
-        MessagingPlatformConfig config = platformConfigRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("平台配置不存在"));
+        MessagingPlatformConfig config = platformConfigRepository.findById(id).orElseThrow(() -> new RuntimeException("平台配置不存在"));
         config.setIsEnabled(!config.getIsEnabled());
         config = platformConfigRepository.save(config);
         return ResponseEntity.ok(ApiResponse.success(toPlatformConfigDTO(config)));
@@ -273,8 +272,7 @@ public class ExternalMessagingController {
      */
     @PostMapping("/messages/{id}/processing")
     public ResponseEntity<ApiResponse<Void>> markMessageProcessing(@PathVariable UUID id) {
-        ExternalMessageLog log = messageLogRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("消息不存在"));
+        ExternalMessageLog log = messageLogRepository.findById(id).orElseThrow(() -> new RuntimeException("消息不存在"));
         log.setProcessingStatus(ProcessingStatus.PROCESSING);
         messageLogRepository.save(log);
         return ResponseEntity.ok(ApiResponse.success(null));
@@ -292,8 +290,7 @@ public class ExternalMessagingController {
             return ResponseEntity.badRequest().body(ApiResponse.badRequest("回复内容不能为空"));
         }
 
-        ExternalMessageLog inboundLog = messageLogRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("消息不存在"));
+        ExternalMessageLog inboundLog = messageLogRepository.findById(id).orElseThrow(() -> new RuntimeException("消息不存在"));
 
         // 发送回复到 Telegram
         if (inboundLog.getBinding() != null) {
